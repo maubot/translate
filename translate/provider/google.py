@@ -27,8 +27,8 @@ class GoogleTranslate:
     supported_languages = {
         "af": "Afrikaans", "sq": "Albanian", "am": "Amharic", "ar": "Arabic", "hy": "Armenian",
         "az": "Azerbaijani", "eu": "Basque", "be": "Belarusian", "bn": "Bengali", "bs": "Bosnian",
-        "bg": "Bulgarian", "ca": "Catalan", "ceb": "Cebuano", "zh-CN": "Chinese (Simplified)",
-        "zh": "Chinese (Simplified)", "zh-TW": "Chinese (Traditional)", "co": "Corsican",
+        "bg": "Bulgarian", "ca": "Catalan", "ceb": "Cebuano", "zh-cn": "Chinese (Simplified)",
+        "zh": "Chinese (Simplified)", "zh-tw": "Chinese (Traditional)", "co": "Corsican",
         "hr": "Croatian", "cs": "Czech", "da": "Danish", "nl": "Dutch", "en": "English",
         "eo": "Esperanto", "et": "Estonian", "fi": "Finnish", "fr": "French", "fy": "Frisian",
         "gl": "Galician", "ka": "Georgian", "de": "German", "el": "Greek", "gu": "Gujarati",
@@ -64,7 +64,7 @@ class GoogleTranslate:
             return "".join(item[0] for item in data[0] if len(item) > 0 and item[0])
 
     def is_supported_language(self, code: str) -> bool:
-        return code in self.supported_languages
+        return code.lower() in self.supported_languages
 
 
 make_translation_provider = GoogleTranslate
