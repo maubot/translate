@@ -1,0 +1,8 @@
+id: xyz.maubot.translate
+version: 0.1.0
+license: AGPL-3.0-or-later
+modules:
+- translate
+main_class: TranslatorBot
+extra_files:
+  - base-config.yaml

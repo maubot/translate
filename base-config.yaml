@@ -1,0 +1,4 @@
+# Translation provider settings
+provider:
+  id: google
+  args: {}
