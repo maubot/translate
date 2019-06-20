@@ -2,3 +2,5 @@
 provider:
   id: google
   args: {}
+# Whether bot responses should use Matrix replies.
+response_reply: true

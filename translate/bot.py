@@ -41,6 +41,7 @@ class Config(BaseProxyConfig):
     def do_update(self, helper: ConfigUpdateHelper) -> None:
         helper.copy("provider.id")
         helper.copy("provider.args")
+        helper.copy("response_reply")
 
 
 class LanguageCodePair(Argument):
@@ -94,6 +95,8 @@ class TranslatorBot(Plugin):
     @command.argument("text", pass_raw=True, required=False)
     async def command_handler(self, evt: MessageEvent, language: Tuple[str, str],
                               text: str) -> None:
+        if not self.config["response_reply"]:
+            evt.disable_reply = True
         if not self.translator:
             self.log.warn("Translate command used, but translator not loaded")
             return
