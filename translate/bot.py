@@ -25,8 +25,10 @@ from .util import Config, LanguageCodePair, TranslationProviderError, AutoTransl
 
 try:
     import langdetect
+    from langdetect.lang_detect_exception import LangDetectException
 except ImportError:
     langdetect = None
+    LangDetectException = None
 
 
 class TranslatorBot(Plugin):
@@ -64,7 +66,10 @@ class TranslatorBot(Plugin):
         def is_acceptable(lang: str) -> bool:
             return lang == atc.main_language or lang in atc.accepted_languages
 
-        if is_acceptable(langdetect.detect(evt.content.body)):
+        try:
+            if is_acceptable(langdetect.detect(evt.content.body)):
+                return
+        except LangDetectException:
             return
         result = await self.translator.translate(evt.content.body, to_lang=atc.main_language)
         if is_acceptable(result.source_language) or result.text == evt.content.body:
