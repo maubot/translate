@@ -16,7 +16,7 @@
 from typing import Optional, Tuple, Type, Dict
 
 from mautrix.util.config import BaseProxyConfig
-from mautrix.types import RoomID, EventType
+from mautrix.types import RoomID, EventType, MessageType
 from maubot import Plugin, MessageEvent
 from maubot.handlers import command, event
 
@@ -53,21 +53,24 @@ class TranslatorBot(Plugin):
 
     @event.on(EventType.ROOM_MESSAGE)
     async def event_handler(self, evt: MessageEvent) -> None:
-        if langdetect is None or evt.sender == self.client.mxid:
+        if (langdetect is None or evt.content.msgtype == MessageType.NOTICE
+                or evt.sender == self.client.mxid):
             return
         try:
             atc = self.auto_translate[evt.room_id]
         except KeyError:
             return
-        lang = langdetect.detect(evt.content.body)
-        if lang == atc.main_language or lang in atc.accepted_languages:
+
+        def is_acceptable(lang: str) -> bool:
+            return lang == atc.main_language or lang in atc.accepted_languages
+
+        if is_acceptable(langdetect.detect(evt.content.body)):
             return
         result = await self.translator.translate(evt.content.body, to_lang=atc.main_language)
-        res_lang = result.source_language
-        if res_lang == atc.main_language or res_lang in atc.accepted_languages:
+        if is_acceptable(result.source_language) or result.text == evt.content.body:
             return
         await evt.respond(f"[{evt.sender}](https://matrix.to/#/{evt.sender}) said "
-                          f"(in {self.translator.get_language_name(res_lang or lang)}): "
+                          f"(in {self.translator.get_language_name(result.source_language)}): "
                           f"{result.text}")
 
     @command.new("translate", aliases=["tr"])
