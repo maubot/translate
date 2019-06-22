@@ -18,11 +18,17 @@ from typing import Dict
 from aiohttp import ClientSession
 from yarl import URL
 
+from . import AbstractTranslationProvider, Result
 
-class GoogleTranslate:
+
+class GoogleTranslate(AbstractTranslationProvider):
+    # Secret translation endpoint used by the Google Translate extension and other such things.
     url: URL = URL("https://translate.googleapis.com/translate_a/single")
     # Needs to be some real browser so Google accepts it
-    user_agent: str = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36"
+    user_agent: str = ("User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                       "(KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36")
+    headers = {"User-Agent": user_agent, "Accept-Charset": "UTF-8", "Connection": "keep-alive",
+               "Accept": "application/json"}
     # From https://cloud.google.com/translate/docs/languages
     supported_languages = {
         "af": "Afrikaans", "sq": "Albanian", "am": "Amharic", "ar": "Arabic", "hy": "Armenian",
@@ -49,22 +55,25 @@ class GoogleTranslate:
         "cy": "Welsh", "xh": "Xhosa", "yi": "Yiddish", "yo": "Yoruba", "zu": "Zulu",
     }
 
-    def __init__(self, prefs: Dict) -> None:
-        pass
+    def __init__(self, args: Dict) -> None:
+        super().__init__(args)
 
-    async def translate(self, text: str, to_lang: str, from_lang: str = "auto") -> str:
+    async def translate(self, text: str, to_lang: str, from_lang: str = "auto") -> Result:
         if not from_lang:
             from_lang = "auto"
         async with ClientSession() as sess:
             resp = await sess.get(self.url.with_query({"client": "gtx", "dt": "t", "q": text,
                                                        "sl": from_lang, "tl": to_lang}),
-                                  headers={"User-Agent": self.user_agent,
-                                           "Accept-Charset": "UTF-8"})
+                                  headers=self.headers)
             data = await resp.json()
-            return "".join(item[0] for item in data[0] if len(item) > 0 and item[0])
+            return Result(text="".join(item[0] for item in data[0] if len(item) > 0 and item[0]),
+                          source_language=data[8][0][0] if len(data) > 8 else data[2])
 
     def is_supported_language(self, code: str) -> bool:
-        return code.lower() in self.supported_languages
+        return code.lower() in self.supported_languages.keys()
+
+    def get_language_name(self, code: str) -> str:
+        return self.supported_languages[code]
 
 
 make_translation_provider = GoogleTranslate

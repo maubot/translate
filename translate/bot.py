@@ -13,88 +13,71 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Dict, Optional, Tuple, Type
-from abc import ABC, abstractmethod
-from importlib import import_module
+from typing import Optional, Tuple, Type, Dict
 
-from mautrix.util.config import BaseProxyConfig, ConfigUpdateHelper
+from mautrix.util.config import BaseProxyConfig
+from mautrix.types import RoomID, EventType
 from maubot import Plugin, MessageEvent
-from maubot.handlers import command
-from maubot.handlers.command import Argument
+from maubot.handlers import command, event
 
+from .provider import AbstractTranslationProvider
+from .util import Config, LanguageCodePair, TranslationProviderError, AutoTranslateConfig
 
-class AbstractTranslationProvider(ABC):
-    @abstractmethod
-    def __init__(self, prefs: Dict) -> None:
-        pass
-
-    @abstractmethod
-    async def translate(self, text: str, to_lang: str, from_lang: str = "auto") -> str:
-        pass
-
-    @abstractmethod
-    def is_supported_language(self, code: str) -> bool:
-        pass
-
-
-class Config(BaseProxyConfig):
-    def do_update(self, helper: ConfigUpdateHelper) -> None:
-        helper.copy("provider.id")
-        helper.copy("provider.args")
-        helper.copy("response_reply")
-
-
-class LanguageCodePair(Argument):
-    def __init__(self, name: str, label: str = None, *, required: bool = False):
-        super().__init__(name, label=label, required=required, pass_raw=True)
-
-    def match(self, val: str, evt: MessageEvent = None, instance: 'TranslatorBot' = None
-              ) -> Tuple[str, Optional[Tuple[str, str]]]:
-        parts = val.split(" ", 2)
-        is_supported = (instance.translator.is_supported_language
-                        if instance.translator
-                        else lambda code: True)
-        if len(parts) == 0 or not is_supported(parts[0]):
-            return val, None
-        elif len(parts) == 1:
-            return "", ("auto", parts[0])
-        elif len(parts) == 2:
-            if is_supported(parts[1]):
-                return "", (parts[0], parts[1])
-            return parts[1], ("auto", parts[0])
-        elif is_supported(parts[1]):
-            return parts[2], (parts[0], parts[1])
-        return " ".join(parts[1:]), ("auto", parts[0])
+try:
+    import langdetect
+except ImportError:
+    langdetect = None
 
 
 class TranslatorBot(Plugin):
     translator: Optional[AbstractTranslationProvider]
+    auto_translate: Dict[RoomID, AutoTranslateConfig]
+    config: Config
 
     async def start(self) -> None:
         await super().start()
-        self.translator = None
         self.on_external_config_update()
 
     def on_external_config_update(self) -> None:
-        self.config.load_and_update()
         self.translator = None
+        self.config.load_and_update()
+        self.auto_translate = self.config.load_auto_translate()
         try:
-            provider = self.config["provider.id"]
-            mod = import_module(f".{provider}", "translate.provider")
-            make = mod.make_translation_provider
-        except (KeyError, AttributeError, ImportError):
-            self.log.exception("Failed to import translation provider")
+            self.translator = self.config.load_translator()
+        except TranslationProviderError:
+            self.log.exception("")
+
+    @classmethod
+    def get_config_class(cls) -> Type['BaseProxyConfig']:
+        return Config
+
+    @event.on(EventType.ROOM_MESSAGE)
+    async def event_handler(self, evt: MessageEvent) -> None:
+        if langdetect is None or evt.sender == self.client.mxid:
             return
         try:
-            self.translator = make(self.config["provider.args"])
-        except Exception:
-            self.log.exception("Failed to initialize translation provider")
+            atc = self.auto_translate[evt.room_id]
+        except KeyError:
+            return
+        lang = langdetect.detect(evt.content.body)
+        if lang == atc.main_language or lang in atc.accepted_languages:
+            return
+        result = await self.translator.translate(evt.content.body, to_lang=atc.main_language)
+        res_lang = result.source_language
+        if res_lang == atc.main_language or res_lang in atc.accepted_languages:
+            return
+        await evt.respond(f"[{evt.sender}](https://matrix.to/#/{evt.sender}) said "
+                          f"(in {self.translator.get_language_name(res_lang or lang)}): "
+                          f"{result.text}")
 
     @command.new("translate", aliases=["tr"])
-    @LanguageCodePair("language", required=True)
+    @LanguageCodePair("language", required=False)
     @command.argument("text", pass_raw=True, required=False)
-    async def command_handler(self, evt: MessageEvent, language: Tuple[str, str],
+    async def command_handler(self, evt: MessageEvent, language: Optional[Tuple[str, str]],
                               text: str) -> None:
+        if not language:
+            await evt.reply("Usage: !translate [from] <to> [text or reply to message]")
+            return
         if not self.config["response_reply"]:
             evt.disable_reply = True
         if not self.translator:
@@ -107,8 +90,4 @@ class TranslatorBot(Plugin):
             await evt.reply("Usage: !translate [from] <to> [text or reply to message]")
             return
         result = await self.translator.translate(text, to_lang=language[1], from_lang=language[0])
-        await evt.reply(result)
-
-    @classmethod
-    def get_config_class(cls) -> Type['BaseProxyConfig']:
-        return Config
+        await evt.reply(result.text)

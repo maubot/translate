@@ -2,5 +2,9 @@
 provider:
   id: google
   args: {}
+auto_translate:
+- room_id: '!roomid:example.com'
+  main_language: en
+  accepted_languages: [fi]
 # Whether bot responses should use Matrix replies.
 response_reply: true
