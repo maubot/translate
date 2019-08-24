@@ -84,7 +84,7 @@ class TranslatorBot(Plugin):
     async def command_handler(self, evt: MessageEvent, language: Optional[Tuple[str, str]],
                               text: str) -> None:
         if not language:
-            await evt.reply("Usage: !translate [from] <to> [text or reply to message]")
+            await evt.reply("Missing two-letter language code; Usage: !translate [language code from] [language code to] [text or reply to message]")
             return
         if not self.config["response_reply"]:
             evt.disable_reply = True
@@ -95,7 +95,7 @@ class TranslatorBot(Plugin):
             reply_evt = await self.client.get_event(evt.room_id, evt.content.get_reply_to())
             text = reply_evt.content.body
         if not text:
-            await evt.reply("Usage: !translate [from] <to> [text or reply to message]")
+            await evt.reply("Missing text; Usage: !translate [language code from] [language code to] [text or reply to message]")
             return
         result = await self.translator.translate(text, to_lang=language[1], from_lang=language[0])
         await evt.reply(result.text)
