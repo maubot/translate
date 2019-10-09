@@ -78,7 +78,7 @@ class TranslatorBot(Plugin):
                           f"(in {self.translator.get_language_name(result.source_language)}): "
                           f"{result.text}")
 
-    @command.new("translate", aliases=["tr"])
+    @command.new("translate", aliases=["tr", "Tr", "TR", "Translate", "TRANSLATE"])
     @LanguageCodePair("language", required=False)
     @command.argument("text", pass_raw=True, required=False)
     async def command_handler(self, evt: MessageEvent, language: Optional[Tuple[str, str]],
