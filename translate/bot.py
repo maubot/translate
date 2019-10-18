@@ -16,7 +16,7 @@
 from typing import Optional, Tuple, Type, Dict
 
 from mautrix.util.config import BaseProxyConfig
-from mautrix.types import RoomID, EventType, MessageType
+from mautrix.types import RoomID, EventID, EventType, MessageType, RedactionEvent
 from maubot import Plugin, MessageEvent
 from maubot.handlers import command, event
 
@@ -34,10 +34,12 @@ except ImportError:
 class TranslatorBot(Plugin):
     translator: Optional[AbstractTranslationProvider]
     auto_translate: Dict[RoomID, AutoTranslateConfig]
+    event_ids: Dict[EventID, EventID]
     config: Config
 
     async def start(self) -> None:
         await super().start()
+        self.event_ids = {}
         self.on_external_config_update()
 
     def on_external_config_update(self) -> None:
@@ -74,9 +76,18 @@ class TranslatorBot(Plugin):
         result = await self.translator.translate(evt.content.body, to_lang=atc.main_language)
         if is_acceptable(result.source_language) or result.text == evt.content.body:
             return
-        await evt.respond(f"[{evt.sender}](https://matrix.to/#/{evt.sender}) said "
-                          f"(in {self.translator.get_language_name(result.source_language)}): "
-                          f"{result.text}")
+        ed = await evt.respond(f"[{evt.sender}](https://matrix.to/#/{evt.sender}) said "
+                               f"(in {self.translator.get_language_name(result.source_language)}): "
+                               f"{result.text}")
+        self.event_ids[evt.event_id] = ed
+
+    @event.on(EventType.ROOM_REDACTION)
+    async def redaction_handler(self, evt: RedactionEvent) -> None:
+        try:
+            await self.client.redact(evt.room_id, self.event_ids.pop(evt.redacts),
+                                     reason="Command that generated this message was redacted")
+        except KeyError:
+            pass
 
     @command.new("translate", aliases=["tr"])
     @LanguageCodePair("language", required=False)

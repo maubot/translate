@@ -14,8 +14,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from typing import Dict
+import logging
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ContentTypeError
 from yarl import URL
 
 from . import AbstractTranslationProvider, Result
@@ -65,7 +66,11 @@ class GoogleTranslate(AbstractTranslationProvider):
             resp = await sess.get(self.url.with_query({"client": "gtx", "dt": "t", "q": text,
                                                        "sl": from_lang, "tl": to_lang}),
                                   headers=self.headers)
-            data = await resp.json()
+            try:
+                data = await resp.json()
+            except ContentTypeError as e:
+                logging.getLogger("maubot.plugin.translate").debug("%s", await resp.text())
+                raise ValueError("hmm") from e
             return Result(text="".join(item[0] for item in data[0] if len(item) > 0 and item[0]),
                           source_language=data[8][0][0] if len(data) > 8 else data[2])
 
