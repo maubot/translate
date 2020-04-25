@@ -53,6 +53,7 @@ class GoogleTranslate(AbstractTranslationProvider):
         "tl": "Tagalog", "tg": "Tajik", "ta": "Tamil", "te": "Telugu", "th": "Thai",
         "tr": "Turkish", "uk": "Ukrainian", "ur": "Urdu", "uz": "Uzbek", "vi": "Vietnamese",
         "cy": "Welsh", "xh": "Xhosa", "yi": "Yiddish", "yo": "Yoruba", "zu": "Zulu",
+        "auto": "Detect language",
     }
 
     def __init__(self, args: Dict) -> None:
