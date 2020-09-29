@@ -3,7 +3,7 @@ A [maubot](https://github.com/maubot/maubot) to translate words using Google Tra
 
 ## Usage
 
-Invite the bot to your room, so you can ask it for translatins, example:
+After inviting the bot to your room, simply use the `!translate` command:
 
     !translate en ru Hello world.
     
@@ -17,6 +17,11 @@ which results in
 You can also use the alias `tr`:
 
     !tr en ru Hello world.
+
+The first parameter (source language) can be set to `auto` or omitted entirely
+to let Google Translate detect the source language. Additionally, you can reply
+to a message with `!tr <from> <to>` (no text) to translate the message you
+replied to.
 
 ## supported languages:
 
