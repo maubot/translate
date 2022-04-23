@@ -47,7 +47,7 @@ class TranslatorBot(Plugin):
         try:
             self.translator = self.config.load_translator()
         except TranslationProviderError:
-            self.log.exception("")
+            self.log.exception("Error loading translator")
 
     @classmethod
     def get_config_class(cls) -> Type['BaseProxyConfig']:
