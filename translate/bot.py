@@ -38,14 +38,14 @@ class TranslatorBot(Plugin):
 
     async def start(self) -> None:
         await super().start()
-        self.on_external_config_update()
+        await self.on_external_config_update()
 
-    def on_external_config_update(self) -> None:
+    async def on_external_config_update(self) -> None:
         self.translator = None
         self.config.load_and_update()
         self.auto_translate = self.config.load_auto_translate()
         try:
-            self.translator = self.config.load_translator()
+            self.translator = await self.config.load_translator()
         except TranslationProviderError:
             self.log.exception("Error loading translator")
 
@@ -84,7 +84,8 @@ class TranslatorBot(Plugin):
     async def command_handler(self, evt: MessageEvent, language: Optional[Tuple[str, str]],
                               text: str) -> None:
         if not language:
-            await evt.reply("Usage: !translate [from] <to> [text or reply to message]")
+            await evt.reply("No supported target language detected. "
+                            "Usage: !translate [from] <to> [text or reply to message]")
             return
         if not self.config["response_reply"]:
             evt.disable_reply = True
@@ -95,7 +96,7 @@ class TranslatorBot(Plugin):
             reply_evt = await self.client.get_event(evt.room_id, evt.content.get_reply_to())
             text = reply_evt.content.body
         if not text:
-            await evt.reply("Usage: !translate [from] <to> [text or reply to message]")
+            await evt.reply("Nothing to translate detected. Usage: !translate [from] <to> [text or reply to message]")
             return
         result = await self.translator.translate(text, to_lang=language[1], from_lang=language[0])
         await evt.reply(result.text)

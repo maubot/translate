@@ -1,7 +1,10 @@
 # Translation provider settings
 provider:
   id: google
-  args: {}
+  args: {
+    url: 'translate.example.com',  # required if you use libretranslate, else irrelevant
+    api_key: 'loremipsumdolorsitamen1234'  # optional if you use libretranslate, else irrelevant
+  }
 auto_translate:
 - room_id: '!roomid:example.com'
   main_language: en

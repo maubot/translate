@@ -41,7 +41,7 @@ class Config(BaseProxyConfig):
         helper.copy("auto_translate")
         helper.copy("response_reply")
 
-    def load_translator(self) -> AbstractTranslationProvider:
+    async def load_translator(self) -> AbstractTranslationProvider:
         try:
             provider = self["provider.id"]
             mod = import_module(f".{provider}", "translate.provider")
@@ -49,7 +49,9 @@ class Config(BaseProxyConfig):
         except (KeyError, AttributeError, ImportError) as e:
             raise TranslationProviderError("Failed to load translation provider") from e
         try:
-            return make(self["provider.args"])
+            translation_provider = make(self["provider.args"])
+            await translation_provider.post_init()
+            return translation_provider
         except Exception as e:
             raise TranslationProviderError("Failed to initialize translation provider") from e
 

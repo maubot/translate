@@ -23,6 +23,8 @@ class AbstractTranslationProvider(ABC):
     @abstractmethod
     def __init__(self, args: Dict) -> None:
         pass
+    async def post_init(self) -> None:
+        pass
 
     @abstractmethod
     async def translate(self, text: str, to_lang: str, from_lang: str = "auto") -> Result:
