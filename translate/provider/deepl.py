@@ -130,5 +130,4 @@ class DeepLTranslate(AbstractTranslationProvider):
         return self.supported_languages
 
 
-
 make_translation_provider = DeepLTranslate
