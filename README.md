@@ -1,5 +1,6 @@
 # translate
-A [maubot](https://github.com/maubot/maubot) to translate words using Google Translate, DeepL or LibreTranslate
+A [maubot](https://github.com/maubot/maubot) to translate words using Google Translate
+or LibreTranslate (Deepl is also planned)
 
 ## Usage
 
