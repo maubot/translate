@@ -100,3 +100,9 @@ class TranslatorBot(Plugin):
             return
         result = await self.translator.translate(text, to_lang=language[1], from_lang=language[0])
         await evt.reply(result.text)
+
+    @command.new("languages")
+    async def languages_command_handler(self, evt: MessageEvent) -> None:
+        await evt.reply(
+            ", ".join([f"{name} `{code}`" for code, name in self.translator.get_supported_languages().items()])
+        )

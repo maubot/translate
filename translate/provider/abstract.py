@@ -37,3 +37,6 @@ class AbstractTranslationProvider(ABC):
     @abstractmethod
     def get_language_name(self, code: str) -> str:
         pass
+    @abstractmethod
+    def get_supported_languages(self) -> dict:
+        pass

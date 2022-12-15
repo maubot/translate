@@ -36,13 +36,14 @@ class LibreTranslate(AbstractTranslationProvider):
                 self._base_url = "https://" + self._base_url
         self.url: URL = URL(self._base_url + "/translate")
         self.api_key = args.get("api_key")
-        self.supported_languages = None
+        self.supported_languages = {"auto": "Detect language"}
 
     async def post_init(self):
         try:
             async with ClientSession() as sess:
                 resp = await sess.get(self._base_url + "/languages")
-                self.supported_languages = {lang["code"]: lang["name"] for lang in await resp.json()}
+                for lang in await resp.json():
+                    self.supported_languages[lang["code"]] = lang["name"]
         except client_exceptions.ClientError:
             raise ValueError(f"This url ({self._base_url}) does not point to a compatible libretranslate instance. "
                              f"Please change it")
@@ -65,6 +66,9 @@ class LibreTranslate(AbstractTranslationProvider):
 
     def get_language_name(self, code: str) -> str:
         return self.supported_languages[code]
+
+    def get_supported_languages(self) -> dict:
+        return self.supported_languages
 
 
 make_translation_provider = LibreTranslate
