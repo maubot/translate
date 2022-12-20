@@ -1,6 +1,8 @@
 # translate
-A [maubot](https://github.com/maubot/maubot) to translate words using Google Translate
-or LibreTranslate (Deepl is also planned)
+A [maubot](https://github.com/maubot/maubot) to translate words using [Google
+Translate](https://translate.google.com/about/) or
+[LibreTranslate](https://github.com/LibreTranslate/LibreTranslate)
+(Deepl is planned too)
 
 ## Usage
 
@@ -26,7 +28,7 @@ replied to.
 
 ## supported languages:
 
-Since this depends on which translation provider you chose and can even vary from
+Since this depends on which translation provider you choose and can even vary from
 one LibreTranslate instance to another, you can use the following command to get
 all the supported languages and their codes:
 
