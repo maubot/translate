@@ -26,5 +26,8 @@ replied to.
 
 ## supported languages:
 
-This depends on the translation provider you choose. For google, a list of
-supported languages can be found at https://cloud.google.com/translate/docs/languages
+Since this depends on which translation provider you chose and can even vary from
+one LibreTranslate instance to another, you can use the following command to get
+all the supported languages and their codes:
+
+    !languages
