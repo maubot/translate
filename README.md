@@ -5,18 +5,18 @@ A [maubot](https://github.com/maubot/maubot) to translate words using Google Tra
 
 After inviting the bot to your room, simply use the `!translate` command:
 
-    !translate en ru Hello world.
+    !translate en uk Hello, world!
     
 which results in
 
     Translate Bot:
     > rubo77
-    > !translate en ru Hello world.
-    Привет, мир.
+    > !translate en uk Hello, world!
+    Привіт Світ!
 
 You can also use the alias `tr`:
 
-    !tr en ru Hello world.
+    !tr en uk Hello, world!
 
 The first parameter (source language) can be set to `auto` or omitted entirely
 to let Google Translate detect the source language. Additionally, you can reply
