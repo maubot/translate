@@ -37,19 +37,23 @@ class TranslationProviderError(Exception):
 class Config(BaseProxyConfig):
     def do_update(self, helper: ConfigUpdateHelper) -> None:
         helper.copy("provider.id")
+        helper.copy("provider.auth_key")
         helper.copy("provider.args")
         helper.copy("auto_translate")
         helper.copy("response_reply")
 
-    def load_translator(self) -> AbstractTranslationProvider:
+    async def load_translator(self) -> AbstractTranslationProvider:
         try:
             provider = self["provider.id"]
+            auth_key = self["provider.auth_key"]
             mod = import_module(f".{provider}", "translate.provider")
             make = mod.make_translation_provider
         except (KeyError, AttributeError, ImportError) as e:
             raise TranslationProviderError("Failed to load translation provider") from e
         try:
-            return make(self["provider.args"])
+            translation_provider = make(self["provider.args"])
+            await translation_provider.post_init()
+            return translation_provider
         except Exception as e:
             raise TranslationProviderError("Failed to initialize translation provider") from e
 

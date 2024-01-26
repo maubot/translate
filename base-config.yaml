@@ -1,10 +1,17 @@
 # Translation provider settings
 provider:
   id: google
-  args: {}
+  args: {
+    url: 'translate.example.com',  # required if you use libretranslate, else irrelevant
+    # for deepl and libretranslate the api_key is required
+    api_key: 'loremipsumdolorsitamen1234'
+  }
 auto_translate:
 - room_id: '!roomid:example.com'
   main_language: en
   accepted_languages: [fi]
+- room_id: '!roomid2:example.com'
+  main_language: de
+  accepted_languages: [en, es, pt]
 # Whether bot responses should use Matrix replies.
 response_reply: true
