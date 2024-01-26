@@ -25,25 +25,49 @@ from . import AbstractTranslationProvider, Result
 
 
 class DeepLTranslate(AbstractTranslationProvider):
-    url: URL = URL("https://www2.deepl.com/jsonrpc")
+    #url: URL = URL("https://www2.deepl.com/jsonrpc")
+    # Utilizing DeepL SE API Translator (v1.6.0)
+    url: URL = URL("https://api-free.deepl.com/v2/translate")
     user_agent: str = ("User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                        "(KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36")
-    headers: Dict[str, str] = {"User-Agent": user_agent, "Accept-Charset": "UTF-8", "DNT": 1,
+    headers: Dict[str, str] = {"Authorization": auth_key, "User-Agent": user_agent, "Accept-Charset": "UTF-8", "DNT": 1,
                                "Accept": "*/*", "Content-Type": "text/plain",
                                "Connection": "keep-alive", "Origin": "https://www.deepl.com",
                                "Referer": "https://www.deepl.com/translator"}
     supported_languages: Dict[str, str] = {
-        "DE": "German", "EN": "English", "FR": "French", "ES": "Spanish", "IT": "Italian",
-        "NL": "Dutch", "PL": "Polish", "PT": "Portuguese", "RU": "Russian",
+        "bg": "Bulgarian", "cs": "Czech", "da": "Danish", "de": "German",
+        "el": "Greek", "en": "English", "en-US": "English (American)", "en-GB": "English (British)",
+        "es": "Spanish", "et": "Estonian",
+        "fi": "Finish", "fr": "French",
+        "hu": "Hungarian",
+        "id": "Indonesia", "it": "Italian",
+        "ja": "Japanese", "ko": "Korean",
+        "lt": "Lettland", "lv": "Latvia",
+        "nb": "Norwegian", "nl": "Dutch",
+        "pl": "Polish", "pt": "Portuguese", "pt-BR": "Portruguese (Brasil)", "pt-PT": "Portuguese (Portuguese)",
+        "ro": "Rumanian", "ru": "Russian",
+        "sk": "Slowak", "sl": "Slowak", "sv": "Swedish",
+        "tr": "Turkich",
+        "uk": "Ukrainian",
+        "zh": "Chinese",
     }
 
     paragraph_regex: Pattern = re.compile(r"(?:\s*\n)+\s*")
 
     _request_id: int
+    _auth_key: str
 
     def __init__(self, args: Dict) -> None:
         super().__init__(args)
         self._request_id = 0
+        # The authentication key needs to be requested for your account
+        # please consult: https://www.deepl.com/en/pro-license?tab=pro
+        self._auth_key = "DeepL-Auth-Key "
+
+    @property
+    def _auth_key(self, auth_key: str) -> str:
+        self._auth_key += str(auth_key)
+        return self._auth_key
 
     @property
     def request_id(self) -> int:

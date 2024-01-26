@@ -33,3 +33,42 @@ one LibreTranslate instance to another, you can use the following command to get
 all the supported languages and their codes:
 
     !languages
+
+## Providers
+
+To initiate a translation, the given message arguments are paresed and
+passed forward to as a HTTP-requests to the given provider. The
+communication does consume the provider specific API methods.
+
+### google
+
+Cloud Translation API uses Google's neural machine translation
+technology to let you dynamically translate text through the API using
+a Google pre-trained or custom model.
+
+It has two editions: Basic and Advanced. Both provide fast and dynamic
+translation, but Advanced offers additional customization features,
+such as domain-specific translation, formatted document translation,
+and batch translation.
+
+The `first 500,000 characters` sent to the API to process (Basic and
+Advanced combined) per month are free.
+
+### deepl
+
+The DeepL API provides programmatic access to DeepL’s machine
+translation technology, making it possible to bring high quality
+translation capabilities directly to this translation bot.
+For further infomation, please consult their
+[API-Documentation](https://www.deepl.com/docs-api/introduction "DeepL-API").
+
+Depending of the choosen model (DeepL API Pro vs. Deepl API Free) the
+correct connection URL needs to be send in the POST requests. Both
+API's do require an `auth_key`. The `auth_key` does identify the given
+customer and is used to charge accordingly.
+With the DeepL API Free plan, you can translate up to `500,000
+characters` per month for free.
+
+To use `DeepL API Free`, devolopers may register free of charge and
+recieve an `auth_key`. Thus, the have to provide a valid credit-card
+number.
