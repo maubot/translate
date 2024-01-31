@@ -74,7 +74,7 @@ class GoogleTranslate(AbstractTranslationProvider):
         return code.lower() in self.supported_languages.keys()
 
     def get_language_name(self, code: str) -> str:
-        return self.supported_languages[code]
+        return self.supported_languages[code.lower()]
 
 
 make_translation_provider = GoogleTranslate
